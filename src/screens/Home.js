@@ -14,38 +14,28 @@ import {
   FlatList,
   ScrollView
 } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateLikedBlog, updateUnlikedBlog } from '../features/blog/blogSlice';
 import { withAuthenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
-import { useSelector } from 'react-redux';
 import { useFetchBlogs } from '../hooks/dbRequests';
 import { useThemeMode, ThemeConsumer } from '@rneui/themed';
 import BottomTab from '../components/layout/BottomTab';
 import Header from '../components/layout/Header';
 import BlogCard from '../components/ui/BlogCard';
-import { likeBlog } from '../database/services/mutations';
+import { likeBlog, unlikeBlog } from '../database/services/mutations';
 import ImageView from "react-native-image-viewing";
 
 const userSelector = (context) => [context.user]
 
-const images = [
-  {
-    uri: "https://images.unsplash.com/photo-1571501679680-de32f1e7aad4",
-  },
-  {
-    uri: "https://images.unsplash.com/photo-1573273787173-0eb81a833b34",
-  },
-  {
-    uri: "https://images.unsplash.com/photo-1569569970363-df7b6160d111",
-  },
-];
-
 function Home({ navigation }) {
   const { user, signOut } = useAuthenticator(userSelector);
+  const dispatch = useDispatch();
   const blogs = useSelector(state => state.blog.data);
 
   const [isVisible, setIsVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
 
-  useFetchBlogs()
+  useFetchBlogs();
 
   return (
     <ThemeConsumer>
@@ -53,8 +43,8 @@ function Home({ navigation }) {
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
           <Header navigation={navigation} text="E-Blogger" />
           {/* <TouchableOpacity onPress={signOut}>
-            <Text style={{ fontWeight: 'bold', fontSize: 30, color: theme.colors.secondary }}> Sign Out </Text> */}
-          {/* </TouchableOpacity> */}
+            <Text style={{ fontWeight: 'bold', fontSize: 30, color: theme.colors.secondary }}> Sign Out </Text>
+          </TouchableOpacity> */}
           <ImageView
             images={[{
               uri: selectedImage
@@ -65,14 +55,21 @@ function Home({ navigation }) {
           />
           <FlatList
             data={blogs}
+            extraData={blogs}
             renderItem={({ item, index }) => {
               return (
                 <BlogCard
                   item={item}
+                  navigation={navigation}
                   isLastItem={index === blogs.length - 1}
-                  isLiked={item.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
+                  isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
                   onLike={() => {
                     likeBlog(item.blogId, user.attributes.email)
+                    dispatch(updateLikedBlog({id: item.blogId, email: user.attributes.email}))
+                  }} 
+                  onUnlike={() => {
+                    unlikeBlog(item.blogId, user.attributes.email)
+                    dispatch(updateUnlikedBlog({id: item.blogId, email: user.attributes.email}))
                   }} 
                   onImagePressed={()=>{
                     setSelectedImage(item.thumbnail);

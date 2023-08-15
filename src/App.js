@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from './screens/Home';
 import BlogCreate from './screens/BlogCreate';
+import BlogDetails from './screens/BlogDetails';
 
 const theme = createTheme({
   lightColors: {
@@ -64,6 +65,9 @@ function App() {
               headerShown: false
             }} />
             <Stack.Screen name="BlogCreate" component={BlogCreate} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="BlogDetails" component={BlogDetails} options={{
               headerShown: false
             }} />
           </Stack.Navigator>
