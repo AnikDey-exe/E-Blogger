@@ -1,5 +1,5 @@
 import Realm from "realm";
-import { BlogSchema } from "../schemas";
+import { BlogSchema, CommentsSchema } from "../schemas";
 import { DB_APP_ID } from '@env';
 
 export const createBlog = async (title, hashtag, content, author, status, thumbnail, date, likedBy, id) => {
@@ -130,6 +130,57 @@ export const unlikeBlog = async(id, email) => {
     realm.write(() => {
         const blog = realm.objects("Blog").filtered(`blogId='${id}'`)[0]
         blog.likedBy = [...blog.likedBy.filter(item => item !== email)]
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const addComment = async (id, author, date, image, likedBy, message, utcDate) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [CommentsSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const comments = realm
+                .objects("Comments")
+            subs.add(comments);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    let item;
+    realm.write(() => {
+        item = realm.create('Blog', {
+            _id: id,
+            author: author,
+            commentId: id,
+            date: date,
+            image: image,
+            likedBy: likedBy,
+            message: message,
+            utcDate: utcDate
+        })
+        console.log('Created.')
     })
 
     setTimeout(() => {

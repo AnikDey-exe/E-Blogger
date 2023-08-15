@@ -14,6 +14,7 @@ import GlobalButton from '../components/ui/GlobalButton';
 import Alert from '../components/ui/Alert';
 import MessageInput from '../components/ui/MessageInput';
 import Markdown from 'react-native-markdown-package';
+import { selectImage } from '../utils';
 
 function BlogDetails({ route, navigation }) {
     const { blogId } = route.params;
@@ -21,6 +22,7 @@ function BlogDetails({ route, navigation }) {
 
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const [selectedImage, setSelectedImage] = useState(null);
 
     return (
         <ThemeConsumer>
@@ -55,22 +57,29 @@ function BlogDetails({ route, navigation }) {
 
                     {/* bottom menu */}
                     <View style={[styles.bottomMenu, { backgroundColor: 'transparent' }]}>
-                        <GlobalButton>
+                        <GlobalButton
+                            onPress={() => {
+                                selectImage(function (res) {
+                                    if (!res.error) {
+                                        setSelectedImage(res.source)
+                                    }
+                                })
+                            }}>
                             <Icon
                                 name="folder-images"
                                 type="entypo"
-                                color={theme.colors.background}/>
+                                color={theme.colors.background} />
                         </GlobalButton>
                         <MessageInput
                             value={message}
-                            onChangeText={(text)=>{
+                            onChangeText={(text) => {
                                 setMessage(text)
-                            }}/>
+                            }} />
                         <GlobalButton>
                             <Icon
                                 name="send"
                                 type="feather"
-                                color={theme.colors.background}/>
+                                color={theme.colors.background} />
                         </GlobalButton>
                     </View>
                 </View>
@@ -106,7 +115,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins-SemiBold',
         color: 'black',
         fontSize: 20,
-        marginTop: 20
+        marginTop: 30
     },
     bottomMenu: {
         flexDirection: 'row',
