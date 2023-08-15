@@ -1,7 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemeConsumer } from '@rneui/themed';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
 
 export default function GlobalButton({ children, onPress, style = {} }) {
     return (
