@@ -37,6 +37,7 @@ export default function BlogCard({ item, isLastItem, isLiked, onLike, onUnlike, 
                             onPress={isLiked ? onUnlike : onLike} />
                         <Text style={[styles.metric, {color: theme.colors.secondary}]}>{item.likedBy.length}</Text>
                     </View>
+                    <Text style={[styles.date, {color: theme.colors.secondary}]}> {item.date} </Text>
                 </View>
             )}
         </ThemeConsumer>
@@ -72,5 +73,10 @@ const styles = StyleSheet.create({
         fontSize: 20, 
         marginTop: 20, 
         marginLeft: 10 
+    },
+    date: {
+        fontFamily: 'Inter-Regular',
+        marginLeft: 10,
+        marginTop: 10
     }
 })

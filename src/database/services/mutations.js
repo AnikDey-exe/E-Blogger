@@ -137,7 +137,7 @@ export const unlikeBlog = async(id, email) => {
     }, 2000)
 }
 
-export const addComment = async (id, author, date, image, likedBy, message, utcDate) => {
+export const addComment = async (id, commentId, author, date, image, likedBy, message, utcDate) => {
     const app = new Realm.App({
         id: DB_APP_ID,
         timeout: 2000
@@ -170,10 +170,10 @@ export const addComment = async (id, author, date, image, likedBy, message, utcD
 
     let item;
     realm.write(() => {
-        item = realm.create('Blog', {
+        item = realm.create('Comments', {
             _id: id,
             author: author,
-            commentId: id,
+            commentId: commentId,
             date: date,
             image: image,
             likedBy: likedBy,
