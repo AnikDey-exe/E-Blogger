@@ -187,3 +187,85 @@ export const addComment = async (id, commentId, author, date, image, likedBy, me
         user.logOut()
     }, 2000)
 }
+
+export const likeComment = async (id, email) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [CommentsSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const comments = realm
+                .objects("Comments")
+            subs.add(comments);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(() => {
+        const comment = realm.objects("Comments").filtered(`_id='${id}'`)[0]
+        comment.likedBy = [...comment.likedBy, email]
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const unlikeComment = async (id, email) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [CommentsSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const comments = realm
+                .objects("Comments")
+            subs.add(comments);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(() => {
+        const comment = realm.objects("Comments").filtered(`_id='${id}'`)[0]
+        comment.likedBy = [...comment.likedBy.filter(item => item !== email)]
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}

@@ -108,7 +108,9 @@ function BlogDetails({ route, navigation }) {
                                 renderItem={({ item, index }) => {
                                     return (
                                         <MessageCard
-                                            item={item}/>
+                                            item={item}
+                                            email={user.attributes.email}
+                                            isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}/>
                                     )
                                 }}
                                 keyExtractor={item => item._id} />

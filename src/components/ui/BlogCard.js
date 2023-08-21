@@ -1,8 +1,8 @@
-import React from "react";
+import React, {memo} from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { Icon, ThemeConsumer } from "@rneui/themed";
 
-export default function BlogCard({ item, isLastItem, isLiked, onLike, onUnlike, onImagePressed, navigation }) {
+function BlogCard({ item, isLastItem, isLiked, onLike, onUnlike, onImagePressed, navigation }) {
     return (
         <ThemeConsumer>
             {({ theme }) => (
@@ -80,3 +80,5 @@ const styles = StyleSheet.create({
         marginTop: 10
     }
 })
+
+export default memo(BlogCard)

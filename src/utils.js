@@ -8,6 +8,7 @@ try {
 }
 
 */
+import { useMemo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { launchImageLibrary } from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
@@ -53,7 +54,7 @@ export const uploadImage = async (path, imageSrc) => {
   await reference.putFile(imageSrc);
 }
 
-export const getImage = async(path) => {
+export const getImage = async (path) => {
   const url = await storage().ref(path).getDownloadURL();
   console.log('s', url)
   return url;
@@ -75,4 +76,13 @@ export const getCurrentDate = () => {
   const finalDate = `${month} ${day} ${year}`;
 
   return finalDate
+}
+
+export const getDiffBetweenDates = (date1, date2) => {
+  let oneDay = 24 * 60 * 60 * 1000;
+  const firstDate = new Date(date1);
+  const secondDate = new Date(date2);
+
+  const diffDays = Math.round(Math.abs((firstDate - secondDate) / oneDay));
+  return diffDays.toString();
 }
