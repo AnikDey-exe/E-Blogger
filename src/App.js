@@ -9,6 +9,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from './screens/Home';
 import BlogCreate from './screens/BlogCreate';
 import BlogDetails from './screens/BlogDetails';
+import UserDetails from './screens/UserDetails';
+import Base from './screens/Settings/Base';
+import ProfileEdit from './screens/Settings/ProfileEdit';
+import DateFormatting from './screens/Settings/DateFormatting';
+import ThemeMode from './screens/Settings/ThemeMode';
+import Privacy from './screens/Settings/Privacy';
 
 const theme = createTheme({
   lightColors: {
@@ -28,7 +34,7 @@ const Stack = createNativeStackNavigator();
 
 function App() {
   const [themeObject, setThemeObject] = useState(null);
-  async function getData(key){
+  async function getData(key) {
     try {
       const data = await AsyncStorage.getItem(key);
       return data;
@@ -36,9 +42,9 @@ function App() {
       console.log(error);
     }
   };
-  useEffect(()=>{
+  useEffect(() => {
     getData('theme')
-      .then(data=>{
+      .then(data => {
         setThemeObject(createTheme({
           lightColors: {
             primary: PRIMARY_COLOR,
@@ -62,12 +68,34 @@ function App() {
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Screen name="Home" component={Home} options={{
-              headerShown: false
+              headerShown: false,
+              gestureEnabled: false,
+              animation: 'none'
             }} />
             <Stack.Screen name="BlogCreate" component={BlogCreate} options={{
               headerShown: false
             }} />
             <Stack.Screen name="BlogDetails" component={BlogDetails} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="UserDetails" component={UserDetails} options={{
+              headerShown: false,
+              gestureEnabled: false,
+              animation: 'none'
+            }} />
+            <Stack.Screen name="SettingsBase" component={Base} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="ProfileEdit" component={ProfileEdit} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="DateFormatting" component={DateFormatting} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="ThemeMode" component={ThemeMode} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="Privacy" component={Privacy} options={{
               headerShown: false
             }} />
           </Stack.Navigator>

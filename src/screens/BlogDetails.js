@@ -60,7 +60,7 @@ function BlogDetails({ route, navigation }) {
         <ThemeConsumer>
             {({ theme }) => (
                 <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-                    <AltHeader navigation={navigation} text="Post"
+                    <AltHeader hasLeftComponent={true} navigation={navigation} text="Post"
                         background={'transparent'}
                     />
                     <ScrollView keyboardShouldPersistTaps="handled">

@@ -30,3 +30,18 @@ export const CommentsSchema = {
   },
   primaryKey: '_id',
 };
+
+export const UsersSchema = {
+  name: 'Users',
+  properties: {
+    _id: 'string',
+    accountVisibility: 'string',
+    bio: 'string',
+    dateOption: 'string',
+    email: 'string',
+    followers: 'string[]',
+    handle: 'string',
+    profilePicture: 'string',
+  },
+  primaryKey: '_id',
+};

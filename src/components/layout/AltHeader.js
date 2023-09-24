@@ -8,24 +8,34 @@ import {
 import { Header as RNHeader, ThemeConsumer, Icon } from '@rneui/themed';
 import { PRIMARY_COLOR } from '../../constants';
 
-export default function AltHeader({ navigation, text, background }) {
+export default function AltHeader({ navigation, text, background, hasLeftComponent, rightComponent }) {
     return (
         <ThemeConsumer>
             {({ theme }) => (
                 <RNHeader
                     hideStatusBar={true}
-                    containerStyle={styles.container}
+                    containerStyle={[styles.container, {borderBottomColor: theme.colors.background}]}
                     backgroundColor={background || theme.colors.background}
-                    centerComponent={{ text: text, style: styles.heading }}
+                    centerComponent={{ text: text, style: {...styles.heading, color: theme.colors.secondary} }}
                     leftComponent={
-                        <Icon
-                            name="left"
-                            type="antdesign"
-                            color={theme.colors.primary} 
-                            onPress={()=>{navigation.goBack()}}/>
+                        hasLeftComponent &&
+                        <TouchableOpacity 
+                            style={{width: 50, height: 50, backgroundColor: 'transparent', alignItems: 'flex-start', justifyContent: 'center'}}
+                            onPress={() => { navigation.goBack() }}>
+                            <Icon
+                                name="left"
+                                type="antdesign"
+                                color={theme.colors.secondary}
+                                onPress={() => { navigation.goBack() }}
+                                size={17.5} />
+                        </TouchableOpacity>
                     }
                     leftContainerStyle={{
-                        marginTop: 7.5
+                        marginTop: 6.5
+                    }}
+                    rightComponent={rightComponent}
+                    rightContainerStyle={{
+                        marginTop: 2
                     }}
                 />
             )}
@@ -36,11 +46,14 @@ export default function AltHeader({ navigation, text, background }) {
 const styles = StyleSheet.create({
     container: {
         marginLeft: 10,
-        marginRight: 10
+        marginRight: 10,
+        marginTop: -15,
+        borderBottomStyle: 'solid',
+        borderBottomWidth: 1
     },
     heading: {
-        color: PRIMARY_COLOR,
         fontFamily: 'Inter-Bold',
-        fontSize: 25
+        fontSize: 20,
+        marginTop: 17
     }
 })

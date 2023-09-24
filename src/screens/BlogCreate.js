@@ -88,7 +88,7 @@ function BlogCreate({ navigation }) {
         <ThemeConsumer>
             {({ theme }) => (
                 <View style={[styles.container, { backgroundColor: !alertVisible ? theme.colors.background: 'rgba(0, 0, 0, 0.5)'}]}>
-                    <AltHeader navigation={navigation} text="Create" 
+                    <AltHeader navigation={navigation} hasLeftComponent={true} text="Create" 
                     background={'transparent'}
                     />
                     <Alert visible={alertVisible} onClose={()=>{

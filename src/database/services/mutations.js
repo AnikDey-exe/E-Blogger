@@ -1,5 +1,5 @@
 import Realm from "realm";
-import { BlogSchema, CommentsSchema } from "../schemas";
+import { BlogSchema, CommentsSchema, UsersSchema } from "../schemas";
 import { DB_APP_ID } from '@env';
 
 export const createBlog = async (title, hashtag, content, author, status, thumbnail, date, likedBy, id) => {
@@ -96,7 +96,7 @@ export const likeBlog = async (id, email) => {
     }, 2000)
 }
 
-export const unlikeBlog = async(id, email) => {
+export const unlikeBlog = async (id, email) => {
     const app = new Realm.App({
         id: DB_APP_ID,
         timeout: 2000
@@ -263,6 +263,263 @@ export const unlikeComment = async (id, email) => {
     realm.write(() => {
         const comment = realm.objects("Comments").filtered(`_id='${id}'`)[0]
         comment.likedBy = [...comment.likedBy.filter(item => item !== email)]
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const registerUser = async (id, accountVisibility, bio, dateOption, email, followers, handle, profilePicture) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [UsersSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const users = realm
+                .objects("Users")
+            subs.add(users);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    let item;
+    realm.write(() => {
+        item = realm.create('Users', {
+            _id: id,
+            accountVisibility: accountVisibility,
+            bio: bio,
+            dateOption: dateOption,
+            email: email,
+            followers: followers,
+            handle: handle,
+            profilePicture: profilePicture
+        })
+    })
+    console.log('created')
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const followUser = async (id, email) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [UsersSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const users = realm
+                .objects("Users")
+            subs.add(users);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(()=>{
+        const tUser = realm.objects("Users").filtered(`_id='${id}'`)[0];
+        tUser.followers = [...tUser.followers, email];
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const unfollowUser = async (id, email) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [UsersSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const users = realm
+                .objects("Users")
+            subs.add(users);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(()=>{
+        const tUser = realm.objects("Users").filtered(`_id='${id}'`)[0];
+        tUser.followers = [...tUser.followers.filter(item => item !== email)];
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const updateProfilePicture = async (email, image) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [UsersSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const users = realm
+                .objects("Users")
+            subs.add(users);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(()=>{
+        const tUser = realm.objects("Users").filtered(`email='${email}'`)[0];
+        tUser.profilePicture = image;
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const updateProfile = async (email, handle, bio) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [UsersSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const users = realm
+                .objects("Users")
+            subs.add(users);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(()=>{
+        const tUser = realm.objects("Users").filtered(`email='${email}'`)[0];
+        tUser.handle = handle;
+        tUser.bio = bio;
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const updateDateOption = async (email, dateOption) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [UsersSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const users = realm
+                .objects("Users")
+            subs.add(users);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(()=>{
+        const tUser = realm.objects("Users").filtered(`email='${email}'`)[0];
+        tUser.dateOption = dateOption;
     })
 
     setTimeout(() => {

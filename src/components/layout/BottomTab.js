@@ -6,11 +6,15 @@ import {
     StyleSheet
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { withAuthenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
 import { Icon } from '@rneui/themed';
 import { BOTTOM_TAB_ROUTES } from '../../routes';
 import { useThemeMode, ThemeConsumer } from '@rneui/themed';
 
+const userSelector = (context) => [context.user]
+
 export default function BottomTab({ navigation, currentTab }) {
+    const { user, signOut } = useAuthenticator(userSelector);
     const { mode, setMode } = useThemeMode();
 
     return (
@@ -24,7 +28,13 @@ export default function BottomTab({ navigation, currentTab }) {
                                     name={currentTab === item.path ? item.selected.iconName : item.iconName}
                                     type={currentTab === item.path ? item.selected.iconType : item.iconType}
                                     onPress={() => {
-                                        navigation.navigate(item.path)
+                                        if(!item.params) {
+                                            navigation.navigate(item.path)
+                                        } else {
+                                            navigation.navigate(item.path, {
+                                                email: user.attributes.email
+                                            })
+                                        }
                                     }}
                                     color={theme.colors.primary}
                                     size={30} />
@@ -56,6 +66,6 @@ const styles = StyleSheet.create({
         // shadowColor: 'black',
         // elevation: 15,
         // shadowOffset: { width: 5, height: 5 },
-        alignItems: 'center',
+        alignItems: 'center'
     }
 })

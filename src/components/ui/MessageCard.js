@@ -6,6 +6,7 @@ import { likeComment, unlikeComment } from "../../database/services/mutations";
 
 export default function MessageCard({ item, isLiked, email }) {
     const [liked, setLiked] = useState(isLiked);
+    const [likes, setLikes] = useState(item.likedBy.length)
 
     return (
         <ThemeConsumer>
@@ -32,13 +33,15 @@ export default function MessageCard({ item, isLiked, email }) {
                                 if (liked) {
                                     await unlikeComment(item._id, email)
                                     setLiked(false)
+                                    setLikes(prevLikes => prevLikes - 1)
                                 } else {
                                     await likeComment(item._id, email)
                                     setLiked(true)
+                                    setLikes(prevLikes => prevLikes + 1)
                                 }
                             }}
                         />
-                        <Text style={[styles.metric, {color: theme.colors.secondary}]}>{item.likedBy.length}</Text>
+                        <Text style={[styles.metric, {color: theme.colors.secondary}]}>{likes}</Text>
                     </View>
                 </View>
             )}

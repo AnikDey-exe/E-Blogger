@@ -13,7 +13,7 @@ export default function Alert({ visible, onClose, message }) {
             <View style={styles.centerView}>
                 <View style={styles.modalContainer}>
                     <Text style={{position: 'absolute', top: 20, color: PRIMARY_COLOR, fontFamily: 'Inter-Bold', fontSize: 20}}> Alert </Text>
-                    <Text style={{color: 'black', fontFamily: 'Poppins-Regular', fontSize: 17.5}}> Title is required </Text>
+                    <Text style={{color: 'black', fontFamily: 'Poppins-Regular', fontSize: 17.5}}>{message} </Text>
                     <GlobalButton style={styles.closeButton} onPress={onClose}>
                         <Text style={{ color: 'white', fontFamily: 'Inter-Bold' }}> Close </Text>
                     </GlobalButton>
