@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Icon, ThemeConsumer } from "@rneui/themed";
 import { PRIMARY_COLOR } from "../../constants";
 
-export default function OptionList({ options, checkedOption, onChangeOption, containerStyle = {} }) {
+export default function OptionList({ options, checkedOption, onChangeOption, disabled, containerStyle = {} }) {
     return (
         <ThemeConsumer>
             {({ theme }) => (
@@ -11,7 +11,9 @@ export default function OptionList({ options, checkedOption, onChangeOption, con
                     {options.map((item, i) => {
                         return (
                             <TouchableOpacity 
-                                style={[styles.optionButton, { backgroundColor: theme.colors.background }]}
+                                key={i}
+                                disabled={disabled}
+                                style={[styles.optionButton, { backgroundColor: theme.colors.background, opacity: disabled ? 0.5 : 1 }]}
                                 onPress={()=>{
                                     onChangeOption(item.name)
                                 }}>

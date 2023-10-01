@@ -526,3 +526,44 @@ export const updateDateOption = async (email, dateOption) => {
         user.logOut()
     }, 2000)
 }
+
+export const updateAccountVisibility = async (email, accountVisibility) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [UsersSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const users = realm
+                .objects("Users")
+            subs.add(users);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(()=>{
+        const tUser = realm.objects("Users").filtered(`email='${email}'`)[0];
+        tUser.accountVisibility = accountVisibility;
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}

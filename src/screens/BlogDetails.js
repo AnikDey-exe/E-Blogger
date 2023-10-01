@@ -29,6 +29,7 @@ function BlogDetails({ route, navigation }) {
     const blog = useSelector(state => state.blog.data.find((item) => item.blogId === blogId));
 
     const { user, signOut } = useAuthenticator(userSelector);
+    const profile = useSelector(state => state.user.data.find((item) => item.email === user.attributes.email));
 
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
@@ -110,7 +111,8 @@ function BlogDetails({ route, navigation }) {
                                         <MessageCard
                                             item={item}
                                             email={user.attributes.email}
-                                            isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}/>
+                                            isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
+                                            absoluteDate={profile.dateOption === 'absolute'}/>
                                     )
                                 }}
                                 keyExtractor={item => item._id} />

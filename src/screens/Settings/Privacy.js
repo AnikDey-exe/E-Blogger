@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Text,
     View,
@@ -11,6 +11,8 @@ import { ThemeConsumer, Switch } from '@rneui/themed';
 import AltHeader from '../../components/layout/AltHeader';
 import { PRIMARY_COLOR } from '../../constants';
 import OptionList from '../../components/ui/OptionList';
+import { updateAccountVisibility } from '../../database/services/mutations';
+import { updateUserAccountVisibility } from '../../features/user/userSlice';
 
 const userSelector = (context) => [context.user]
 
@@ -42,8 +44,15 @@ function Privacy({ navigation }) {
                                 }
                             ]
                         }
-                        checkedOption={checkedOption} 
-                        onChangeOption={setCheckedOption}/>
+                        disabled={changing}
+                        checkedOption={checkedOption}
+                        onChangeOption={async (item) => {
+                            setCheckedOption(item);
+                            setChanging(true);
+                            await updateAccountVisibility(user.attributes.email, item);
+                            dispatch(updateUserAccountVisibility({id: profile._id, accountVisibility: item}));
+                            setChanging(false);
+                        }} />
                 </View>
             )}
         </ThemeConsumer>

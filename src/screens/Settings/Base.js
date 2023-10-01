@@ -7,11 +7,16 @@ import {
     StyleSheet,
     ScrollView
 } from 'react-native';
+import { withAuthenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
 import { ThemeConsumer, useThemeMode, Icon } from '@rneui/themed';
 import AltHeader from '../../components/layout/AltHeader';
 import { SETTINGS_ROUTES } from '../../routes';
 
+const userSelector = (context) => [context.user]
+
 function Base({ navigation }) {
+    const { user, signOut } = useAuthenticator(userSelector);
+
     return (
         <ThemeConsumer>
             {({ theme }) => (
@@ -33,6 +38,10 @@ function Base({ navigation }) {
                             )
                         })}
                     </ScrollView>
+
+                    <TouchableOpacity onPress={signOut} style={styles.signOutButton}>
+                        <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 17.5, color: 'red' }}> Sign Out </Text>
+                    </TouchableOpacity>
                 </View>
             )}
         </ThemeConsumer>
@@ -43,7 +52,7 @@ function SettingsTab({ navigation, tabName, tabNameMarginLeft, tabPath, iconName
     return (
         <ThemeConsumer>
             {({ theme }) => (
-                <TouchableOpacity onPress={()=>{navigation.navigate(tabPath)}}>
+                <TouchableOpacity onPress={() => { navigation.navigate(tabPath) }}>
                     <View style={styles.tab}>
                         <View style={{
                             flexDirection: 'row', alignItems: 'center',
@@ -92,6 +101,11 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         fontSize: 17.5,
         marginTop: 2.5
+    },
+    signOutButton: {
+        backgroundColor: 'transparent',
+        marginLeft: 15,
+        marginBottom: 15 
     }
 })
 

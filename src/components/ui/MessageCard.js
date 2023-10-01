@@ -4,7 +4,7 @@ import { Icon, ThemeConsumer } from "@rneui/themed";
 import { getDiffBetweenDates } from "../../utils";
 import { likeComment, unlikeComment } from "../../database/services/mutations";
 
-export default function MessageCard({ item, isLiked, email }) {
+export default function MessageCard({ item, isLiked, email, absoluteDate }) {
     const [liked, setLiked] = useState(isLiked);
     const [likes, setLikes] = useState(item.likedBy.length)
 
@@ -14,7 +14,7 @@ export default function MessageCard({ item, isLiked, email }) {
                 <View style={styles.messageContainer}>
                     <View style={styles.metadataContainer}>
                         <Text style={[styles.metadata, { color: theme.colors.secondary }]}>{item.author}</Text>
-                        <Text style={[styles.metadata, { color: 'grey', marginLeft: 10 }]}>{getDiffBetweenDates(item.utcDate, Date.now())}d</Text>
+                        <Text style={[styles.metadata, { color: 'grey', marginLeft: 10 }]}>{!absoluteDate ? getDiffBetweenDates(item.utcDate, Date.now()) + 'd' : item.date}</Text>
                     </View>
                     <Text style={[styles.message, { color: theme.colors.secondary }]}>{item.message} </Text>
                     {item.image != ''
@@ -41,7 +41,7 @@ export default function MessageCard({ item, isLiked, email }) {
                                 }
                             }}
                         />
-                        <Text style={[styles.metric, {color: theme.colors.secondary}]}>{likes}</Text>
+                        <Text style={[styles.metric, { color: theme.colors.secondary }]}>{likes}</Text>
                     </View>
                 </View>
             )}
@@ -69,10 +69,10 @@ const styles = StyleSheet.create({
     metadataContainer: {
         flexDirection: 'row'
     },
-    metric: { 
-        fontFamily: 'Poppins-Regular', 
-        fontSize: 20, 
-        marginTop: 15, 
-        marginLeft: 10 
+    metric: {
+        fontFamily: 'Poppins-Regular',
+        fontSize: 20,
+        marginTop: 15,
+        marginLeft: 10
     }
 })

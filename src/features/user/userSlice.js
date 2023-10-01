@@ -52,11 +52,18 @@ export const userSlice = createSlice({
                     { _id: item._id, accountVisibility: item.accountVisibility, bio: item.bio, dateOption: action.payload.dateOption, email: item.email, followers: item.followers, handle: item.handle, profilePicture: item.profilePicture }
                     : item
             })]
+        },
+        updateUserAccountVisibility: (state, action) => {
+            state.data = [...state.data.map((item, i) => {
+                return item._id === action.payload.id ?
+                    { _id: item._id, accountVisibility: action.payload.accountVisibility, bio: item.bio, dateOption: item.dateOption, email: item.email, followers: item.followers, handle: item.handle, profilePicture: item.profilePicture }
+                    : item
+            })]
         }
     }
 })
 
 // actions are created for each reducer case
-export const { setUsers, setStatus, setError, updateFollowUser, updateUnfollowUser, updateUserProfilePicture, updateUser, updateUserDateOption } = userSlice.actions
+export const { setUsers, setStatus, setError, updateFollowUser, updateUnfollowUser, updateUserProfilePicture, updateUser, updateUserDateOption, updateUserAccountVisibility } = userSlice.actions
 
 export default userSlice.reducer
