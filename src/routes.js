@@ -35,7 +35,7 @@ export const BOTTOM_TAB_ROUTES = [
         iconType: 'antdesign',
         selected: {
             iconName: 'message',
-            iconType: 'antdesign'
+            iconType: 'font-awesome-6'
         }
     },
     {

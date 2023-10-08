@@ -1,5 +1,5 @@
 import Realm from "realm";
-import { BlogSchema, CommentsSchema, UsersSchema } from "../schemas";
+import { BlogSchema, CommentsSchema, ConversationSchema, UsersSchema } from "../schemas";
 import { DB_APP_ID } from '@env';
 import { useDispatch } from 'react-redux';
 import { setUsers } from "../../features/user/userSlice";
@@ -128,4 +128,44 @@ export const isRegistered = async (email) => {
     } else {
         return [false, allUsers];
     }
+}
+
+export const getConversations = async(email) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [ConversationSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const conversations = realm
+                .objects("Conversation")
+            subs.add(conversations);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    const conversations = realm.objects("Conversation").filtered(`participantOne='${email}'`);
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000);
+
+    return conversations;
 }

@@ -1,5 +1,5 @@
 import Realm from "realm";
-import { BlogSchema, CommentsSchema, UsersSchema } from "../schemas";
+import { BlogSchema, CommentsSchema, ConversationSchema, UsersSchema } from "../schemas";
 import { DB_APP_ID } from '@env';
 
 export const createBlog = async (title, hashtag, content, author, status, thumbnail, date, likedBy, id) => {
@@ -352,7 +352,7 @@ export const followUser = async (id, email) => {
         console.error("Failed to log in", err);
     }
 
-    realm.write(()=>{
+    realm.write(() => {
         const tUser = realm.objects("Users").filtered(`_id='${id}'`)[0];
         tUser.followers = [...tUser.followers, email];
     })
@@ -393,7 +393,7 @@ export const unfollowUser = async (id, email) => {
         console.error("Failed to log in", err);
     }
 
-    realm.write(()=>{
+    realm.write(() => {
         const tUser = realm.objects("Users").filtered(`_id='${id}'`)[0];
         tUser.followers = [...tUser.followers.filter(item => item !== email)];
     })
@@ -434,7 +434,7 @@ export const updateProfilePicture = async (email, image) => {
         console.error("Failed to log in", err);
     }
 
-    realm.write(()=>{
+    realm.write(() => {
         const tUser = realm.objects("Users").filtered(`email='${email}'`)[0];
         tUser.profilePicture = image;
     })
@@ -475,7 +475,7 @@ export const updateProfile = async (email, handle, bio) => {
         console.error("Failed to log in", err);
     }
 
-    realm.write(()=>{
+    realm.write(() => {
         const tUser = realm.objects("Users").filtered(`email='${email}'`)[0];
         tUser.handle = handle;
         tUser.bio = bio;
@@ -517,7 +517,7 @@ export const updateDateOption = async (email, dateOption) => {
         console.error("Failed to log in", err);
     }
 
-    realm.write(()=>{
+    realm.write(() => {
         const tUser = realm.objects("Users").filtered(`email='${email}'`)[0];
         tUser.dateOption = dateOption;
     })
@@ -558,10 +558,69 @@ export const updateAccountVisibility = async (email, accountVisibility) => {
         console.error("Failed to log in", err);
     }
 
-    realm.write(()=>{
+    realm.write(() => {
         const tUser = realm.objects("Users").filtered(`email='${email}'`)[0];
         tUser.accountVisibility = accountVisibility;
     })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const createConversation = async (id, email1, email2, lastMessage, lastMessageDate) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [ConversationSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const conversations = realm
+                .objects("Conversation")
+            subs.add(conversations);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    const conversation = realm.objects("Conversation").filtered(`participantOne='${email1}' AND participantTwo='${email2}'`);
+    if (conversation.length === 0) {
+        let item;
+        let item2;
+        realm.write(() => {
+            item = realm.create('Conversation', {
+                _id: id,
+                lastMessage: lastMessage,
+                lastMessageDate: lastMessageDate,
+                participantOne: email1,
+                participantTwo: email2
+            })
+
+            item2 = realm.create('Conversation', {
+                _id: id+'2',
+                lastMessage: lastMessage,
+                lastMessageDate: lastMessageDate,
+                participantOne: email2,
+                participantTwo: email1
+            })
+        })
+    }
 
     setTimeout(() => {
         user.logOut()

@@ -8,7 +8,7 @@ import {
 import { Header as RNHeader, ThemeConsumer, Icon } from '@rneui/themed';
 import { PRIMARY_COLOR } from '../../constants';
 
-export default function Header({ navigation, text }) {
+export default function Header({ navigation, text, rightComponent }) {
     return (
         <ThemeConsumer>
             {({ theme }) => (
@@ -18,10 +18,12 @@ export default function Header({ navigation, text }) {
                     backgroundColor={theme.colors.background}
                     leftComponent={{ text: text, style: styles.heading }} 
                     rightComponent={
-                        <Icon
-                            name="search1"
-                            type="antdesign"
-                            color={theme.colors.primary}/>
+                        rightComponent ? 
+                            rightComponent :
+                            <Icon
+                                name="search1"
+                                type="antdesign"
+                                color={theme.colors.primary}/>
                     }
                     rightContainerStyle={{
                         marginTop: 7.5

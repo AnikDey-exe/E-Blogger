@@ -2,11 +2,14 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemeConsumer } from '@rneui/themed';
 
-export default function GlobalButton({ children, onPress, style = {} }) {
+export default function GlobalButton({ children, onPress, disabled, style = {} }) {
     return (
         <ThemeConsumer>
             {({ theme }) => (
-                <TouchableOpacity onPress={onPress} style={[styles.button, { backgroundColor: theme.colors.primary, ...style }]}>
+                <TouchableOpacity 
+                    onPress={onPress} 
+                    disabled={disabled ? disabled : false}
+                    style={[styles.button, { backgroundColor: theme.colors.primary, ...style }]}>
                     {children}
                 </TouchableOpacity>
             )}

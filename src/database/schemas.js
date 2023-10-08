@@ -31,6 +31,18 @@ export const CommentsSchema = {
   primaryKey: '_id',
 };
 
+export const ConversationSchema = {
+  name: 'Conversation',
+  properties: {
+    _id: 'string',
+    lastMessage: 'string',
+    lastMessageDate: 'string',
+    participantOne: 'string',
+    participantTwo: 'string',
+  },
+  primaryKey: '_id',
+};
+
 export const UsersSchema = {
   name: 'Users',
   properties: {

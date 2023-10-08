@@ -15,6 +15,8 @@ import ProfileEdit from './screens/Settings/ProfileEdit';
 import DateFormatting from './screens/Settings/DateFormatting';
 import ThemeMode from './screens/Settings/ThemeMode';
 import Privacy from './screens/Settings/Privacy';
+import Messages from './screens/Messages';
+import ChatCreate from './screens/ChatCreate';
 
 const theme = createTheme({
   lightColors: {
@@ -96,6 +98,14 @@ function App() {
               headerShown: false
             }} />
             <Stack.Screen name="Privacy" component={Privacy} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="Messages" component={Messages} options={{
+              headerShown: false,
+              gestureEnabled: false,
+              animation: 'none'
+            }} />
+            <Stack.Screen name="ChatCreate" component={ChatCreate} options={{
               headerShown: false
             }} />
           </Stack.Navigator>
