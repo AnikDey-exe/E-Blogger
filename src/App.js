@@ -17,6 +17,7 @@ import ThemeMode from './screens/Settings/ThemeMode';
 import Privacy from './screens/Settings/Privacy';
 import Messages from './screens/Messages';
 import ChatCreate from './screens/ChatCreate';
+import Chat from './screens/Chat';
 
 const theme = createTheme({
   lightColors: {
@@ -106,6 +107,9 @@ function App() {
               animation: 'none'
             }} />
             <Stack.Screen name="ChatCreate" component={ChatCreate} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="Chat" component={Chat} options={{
               headerShown: false
             }} />
           </Stack.Navigator>

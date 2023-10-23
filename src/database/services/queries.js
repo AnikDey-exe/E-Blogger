@@ -161,7 +161,7 @@ export const getConversations = async(email) => {
         console.error("Failed to log in", err);
     }
 
-    const conversations = realm.objects("Conversation").filtered(`participantOne='${email}'`);
+    const conversations = realm.objects("Conversation").filtered(`participantOne='${email}'`).sorted('lastMessageUtcDate', true);
 
     setTimeout(() => {
         user.logOut()

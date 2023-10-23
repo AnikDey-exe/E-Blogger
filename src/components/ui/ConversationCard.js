@@ -4,12 +4,14 @@ import { Avatar, Icon, ThemeConsumer } from "@rneui/themed";
 import { getDiffBetweenDates } from "../../utils";
 import { likeComment, unlikeComment } from "../../database/services/mutations";
 
-export default function ConversationCard({ name, avatar, date, subheading, onPress }) {
+export default function ConversationCard({ name, altName, avatar, date, subheading, onPress }) {
     return (
         <ThemeConsumer>
             {({ theme }) => (
                 <View style={styles.container}>
-                    <TouchableOpacity style={[styles.conversationContainer, { backgroundColor: theme.colors.background }]}>
+                    <TouchableOpacity 
+                        style={[styles.conversationContainer, { backgroundColor: theme.colors.background }]}
+                        onPress={onPress}>
                         <Avatar
                             size={50}
                             rounded
@@ -23,10 +25,11 @@ export default function ConversationCard({ name, avatar, date, subheading, onPre
                                 alignSelf: 'center'
                             }}/>
                         <View style={styles.metadataContainer}>
-                            <Text style={[styles.metadata, {color: theme.colors.secondary}]}>{name}</Text>
-                            <Text style={[styles.metadataSecondary, {color: theme.colors.secondary}]}>{subheading}</Text>
+                            {name && <Text style={[styles.metadata, {color: theme.colors.secondary}]}>{name}</Text>}
+                            {altName && <Text style={[styles.metadataSecondary, { fontFamily: 'Poppins-Medium', marginTop: -10}]}>{altName}</Text>}
+                            {subheading && <Text style={[styles.metadataSecondary, {color: theme.colors.secondary}]}>{subheading}</Text>}
                         </View>
-                        <Text style={[styles.metadataSecondary, {color: theme.colors.secondary, fontSize: 13.5, marginTop: -5}]}>{date}</Text>
+                        <Text style={[styles.metadataSecondary, {color: theme.colors.secondary, fontSize: 13.5, position: 'absolute', top: 12.5, right: 15}]}>{date}</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -40,10 +43,12 @@ const styles = StyleSheet.create({
     },
     conversationContainer: {
         width: '100%',
-        height: 80,
+        height: 'fit-content',
         flexDirection: 'row',
         padding: 20,
-        justifyContent: 'space-between',
+        paddingTop: 10,
+        paddingBottom: 10,
+        // justifyContent: 'space-between',
         // borderStyle: 'solid',
         // borderWidth: 1,
         // borderColor: 'black'
@@ -51,7 +56,12 @@ const styles = StyleSheet.create({
     metadataContainer: {
         marginLeft: 10,
         width: '50%',
-        alignSelf: 'center'
+        alignSelf: 'center',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        // borderStyle: 'solid',
+        // borderWidth: 1,
+        // borderColor: 'black'
     },
     metadata: {
         fontFamily: 'Poppins-Bold',
@@ -59,6 +69,6 @@ const styles = StyleSheet.create({
     },
     metadataSecondary: {
         fontFamily: 'Poppins-Regular',
-        fontSize: 15
+        fontSize: 15,
     }
 })

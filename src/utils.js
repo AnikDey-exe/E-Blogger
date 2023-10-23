@@ -7,6 +7,37 @@ try {
     console.log(e)
 }
 
+chat gpt api
+const apiUrl = 'https://api.openai.com/v1/chat/completions';
+const apiKey = '<open-ai-key>';
+const inputPrompt = options.prompt;
+fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+        "model": "gpt-3.5-turbo",
+        "messages": [{
+            "role": "system",
+            "content": "You are ChatGPT, a helpful assistant."
+        }, {
+            "role": "user",
+            "content": "Your input prompt here."
+        }]
+    })
+}).then(response => {
+    if(!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+}).then(data => {
+    console.log(data.choices[0].message.content);
+}).catch(error => {
+    console.error('Error:', error);
+});
+
 */
 import { useMemo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -85,4 +116,16 @@ export const getDiffBetweenDates = (date1, date2) => {
 
   const diffDays = Math.round(Math.abs((firstDate - secondDate) / oneDay));
   return diffDays.toString();
+}
+
+export const search = (data, text) => {
+  const newData = data.filter(item => {      
+    const itemData = `${item.participantTwo}`.toUpperCase();
+    
+     const textData = text.toUpperCase();
+      
+     return itemData.indexOf(textData) > -1;    
+  });
+  
+  return newData;
 }

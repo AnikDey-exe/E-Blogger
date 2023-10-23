@@ -568,7 +568,7 @@ export const updateAccountVisibility = async (email, accountVisibility) => {
     }, 2000)
 }
 
-export const createConversation = async (id, email1, email2, lastMessage, lastMessageDate) => {
+export const createConversation = async (id, email1, email2, lastMessage, lastMessageDate, lastMessageUtcDate) => {
     const app = new Realm.App({
         id: DB_APP_ID,
         timeout: 2000
@@ -605,17 +605,19 @@ export const createConversation = async (id, email1, email2, lastMessage, lastMe
         let item2;
         realm.write(() => {
             item = realm.create('Conversation', {
-                _id: id,
+                _id: id+'conversation',
                 lastMessage: lastMessage,
                 lastMessageDate: lastMessageDate,
+                lastMessageUtcDate: lastMessageUtcDate,
                 participantOne: email1,
                 participantTwo: email2
             })
 
             item2 = realm.create('Conversation', {
-                _id: id+'2',
+                _id: id+'conversation2',
                 lastMessage: lastMessage,
                 lastMessageDate: lastMessageDate,
+                lastMessageUtcDate: lastMessageUtcDate,
                 participantOne: email2,
                 participantTwo: email1
             })

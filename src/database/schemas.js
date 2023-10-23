@@ -37,6 +37,7 @@ export const ConversationSchema = {
     _id: 'string',
     lastMessage: 'string',
     lastMessageDate: 'string',
+    lastMessageUtcDate: 'double',
     participantOne: 'string',
     participantTwo: 'string',
   },

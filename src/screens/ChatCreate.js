@@ -57,8 +57,9 @@ function ChatCreate({ navigation }) {
 
         const id = createId();
         let currentDate = getCurrentDate().toString();
+        let utcDate = Date.now();
 
-        await createConversation(id, email, user.attributes.email, '', currentDate);
+        await createConversation(id, email, user.attributes.email, 'Start chatting with me!', currentDate, utcDate);
 
         setChanging(false);
         setAlertMessage(`You can now chat with ${email}`);
