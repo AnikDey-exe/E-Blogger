@@ -44,6 +44,18 @@ export const ConversationSchema = {
   primaryKey: '_id',
 };
 
+export const NotificationSchema = {
+  name: 'Notification',
+  properties: {
+    _id: 'string',
+    date: 'string',
+    message: 'string',
+    targetedUser: 'string',
+    utcDate: 'double',
+  },
+  primaryKey: '_id',
+};
+
 export const UsersSchema = {
   name: 'Users',
   properties: {

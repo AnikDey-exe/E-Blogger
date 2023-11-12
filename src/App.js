@@ -18,6 +18,9 @@ import Privacy from './screens/Settings/Privacy';
 import Messages from './screens/Messages';
 import ChatCreate from './screens/ChatCreate';
 import Chat from './screens/Chat';
+import Notifications from './screens/Notifications';
+import Search from './screens/Search';
+import SearchResults from './screens/SearchResults';
 
 const theme = createTheme({
   lightColors: {
@@ -106,10 +109,21 @@ function App() {
               gestureEnabled: false,
               animation: 'none'
             }} />
+            <Stack.Screen name="Notifications" component={Notifications} options={{
+              headerShown: false,
+              gestureEnabled: false,
+              animation: 'none'
+            }} />
             <Stack.Screen name="ChatCreate" component={ChatCreate} options={{
               headerShown: false
             }} />
             <Stack.Screen name="Chat" component={Chat} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="Search" component={Search} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="SearchResults" component={SearchResults} options={{
               headerShown: false
             }} />
           </Stack.Navigator>

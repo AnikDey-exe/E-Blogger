@@ -20,10 +20,7 @@ export default function Header({ navigation, text, rightComponent }) {
                     rightComponent={
                         rightComponent ? 
                             rightComponent :
-                            <Icon
-                                name="search1"
-                                type="antdesign"
-                                color={theme.colors.primary}/>
+                            null
                     }
                     rightContainerStyle={{
                         marginTop: 7.5

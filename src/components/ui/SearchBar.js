@@ -3,11 +3,11 @@ import { View, TextInput, StyleSheet } from "react-native";
 import { Icon, ThemeConsumer } from "@rneui/themed";
 import { PRIMARY_COLOR } from "../../constants";
 
-export default function SearchBar({ value, onChangeText, style = {} }) {
+export default function SearchBar({ value, onChangeText, style = {}, containerStyle = {} }) {
     return (
         <ThemeConsumer>
             {({ theme }) => (
-                <View style={styles.searchContainer}>
+                <View style={[styles.searchContainer, {...containerStyle}]}>
                     <Icon
                         name="search1"
                         type="antdesign"

@@ -5,7 +5,8 @@ import {
     FlatList,
     Image,
     StyleSheet,
-    ScrollView
+    ScrollView,
+    ActivityIndicator
 } from 'react-native';
 import { withAuthenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,7 +19,7 @@ import MessageInput from '../components/ui/MessageInput';
 import MessageCard from '../components/ui/MessageCard';
 import Markdown from 'react-native-markdown-package';
 import { selectImage, createId, getCurrentDate, uploadImage, getImage } from '../utils';
-import { likeBlog, unlikeBlog, addComment } from '../database/services/mutations';
+import { likeBlog, unlikeBlog, addComment, createNotification } from '../database/services/mutations';
 import { getComments } from '../database/services/queries';
 
 const userSelector = (context) => [context.user]
@@ -35,8 +36,13 @@ function BlogDetails({ route, navigation }) {
     const [messages, setMessages] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
 
+    const [inputHeight, setInputHeight] = useState(50);
+    const [loading, setLoading] = useState(false);
+
     async function handleAdd(message, author, imageToUpload) {
+        setLoading(true);
         const id = createId();
+        const notificationId = createId();
         let image = '';
         let currentDate = getCurrentDate().toString();
         let utcDate = Date.now()
@@ -46,7 +52,20 @@ function BlogDetails({ route, navigation }) {
             image = await getImage(`comment/${id}`);
         }
 
-        await addComment(id, blog.blogId, author, currentDate, image, [], message, utcDate)
+        await addComment(id, blog.blogId, author, currentDate, image, [], message, utcDate, notificationId, blog.author, profile.handle);
+        setMessages(prevMessages => [...prevMessages, {
+            _id: id,
+            author: author,
+            commentId: blog.blogId,
+            date: currentDate,
+            image: image,
+            likedBy: [],
+            message: message,
+            utcDate: utcDate
+        }])
+        setMessage('');
+        setSelectedImage('');
+        setLoading(false);
     }
 
     useEffect(() => {
@@ -112,41 +131,77 @@ function BlogDetails({ route, navigation }) {
                                             item={item}
                                             email={user.attributes.email}
                                             isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
-                                            absoluteDate={profile.dateOption === 'absolute'}/>
+                                            absoluteDate={profile.dateOption === 'absolute'} />
                                     )
                                 }}
                                 keyExtractor={item => item._id} />
                         </View>
                     </ScrollView>
-
-                    {/* bottom menu */}
-                    <View style={[styles.bottomMenu, { backgroundColor: 'transparent' }]}>
-                        <GlobalButton
-                            onPress={() => {
-                                selectImage(function (res) {
-                                    if (!res.error) {
-                                        setSelectedImage(res.source)
-                                    }
-                                })
+                    <View>
+                        {selectedImage &&
+                            <View style={{
+                                backgroundColor: 'transparent',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginBottom: 10
                             }}>
-                            <Icon
-                                name="folder-images"
-                                type="entypo"
-                                color={theme.colors.background} />
-                        </GlobalButton>
-                        <MessageInput
-                            value={message}
-                            onChangeText={(text) => {
-                                setMessage(text)
-                            }} />
-                        <GlobalButton onPress={() => {
-                            handleAdd(message, user.attributes.email, selectedImage)
-                        }}>
-                            <Icon
-                                name="send"
-                                type="feather"
-                                color={theme.colors.background} />
-                        </GlobalButton>
+                                <Text style={{
+                                    color: theme.colors.secondary,
+                                    marginLeft: 10
+                                }}> Selected! </Text>
+                                <GlobalButton
+                                    onPress={() => {
+                                        setSelectedImage('')
+                                    }}
+                                    style={{
+                                        marginRight: 10
+                                    }}>
+                                    <Text style={{ color: 'white', fontFamily: 'Inter-Bold' }}> Cancel </Text>
+                                </GlobalButton>
+                            </View>
+                        }
+                        {/* bottom menu */}
+                        <View style={[styles.bottomMenu, { backgroundColor: 'transparent' }]}>
+                            <GlobalButton
+                                onPress={() => {
+                                    selectImage(function (res) {
+                                        if (!res.error) {
+                                            setSelectedImage(res.source)
+                                        }
+                                    })
+                                }}>
+                                <Icon
+                                    name="folder-images"
+                                    type="entypo"
+                                    color={theme.colors.background} />
+                            </GlobalButton>
+                            <MessageInput
+                                value={message}
+                                onChangeText={(text) => {
+                                    setMessage(text)
+                                }}
+                                onFocus={() => {
+                                    setInputHeight(100)
+                                }}
+                                onBlur={() => {
+                                    setInputHeight(50)
+                                }}
+                                style={{
+                                    height: inputHeight
+                                }} />
+                            <GlobalButton onPress={() => {
+                                handleAdd(message, user.attributes.email, selectedImage)
+                            }}>
+                                {loading ?
+                                    <ActivityIndicator size="small" color="white" /> :
+                                    <Icon
+                                        name="send"
+                                        type="feather"
+                                        color={theme.colors.background} />
+                                }
+                            </GlobalButton>
+                        </View>
                     </View>
                 </View>
             )}
@@ -188,12 +243,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         width: '100%',
-        height: 70,
+        height: 'fit-content',
         borderTopWidth: 0.5,
         borderStyle: 'solid',
         borderTopColor: '#d6d6d6',
         paddingLeft: 10,
-        paddingRight: 10
+        paddingRight: 10,
+        paddingTop: 10,
+        paddingBottom: 10
     },
     heartIcon: {
         alignSelf: 'flex-start',

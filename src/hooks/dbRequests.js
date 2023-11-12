@@ -52,3 +52,44 @@ export const useFetchBlogs = () => {
     fetchBlogs()
   }, [])
 }
+
+export const fetchBlogs = async () => {
+  dispatch(setStatus('loading'))
+  const app = new Realm.App({
+    id: DB_APP_ID,
+    timeout: 2000
+  });
+
+  const credentials = Realm.Credentials.anonymous();
+  let user;
+  let realm;
+  try {
+    user = await app.logIn(credentials);
+
+    realm = await Realm.open({
+      schema: [BlogSchema],
+      sync: {
+        user: user,
+        flexible: true
+      },
+    });
+
+    await realm.subscriptions.update((subs) => {
+      const blogs = realm
+        .objects("Blog")
+      subs.add(blogs);
+    });
+    console.log("subscribeds")
+  } catch (err) {
+    console.error("Failed to log in", err);
+  }
+
+  let data = realm.objects("Blog");
+  console.log(data)
+  dispatch(setBlogs([...data]))
+
+  setTimeout(() => {
+    user.logOut()
+    dispatch(setStatus('idle'))
+  }, 2000)
+}

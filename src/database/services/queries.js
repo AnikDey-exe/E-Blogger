@@ -1,5 +1,5 @@
 import Realm from "realm";
-import { BlogSchema, CommentsSchema, ConversationSchema, UsersSchema } from "../schemas";
+import { BlogSchema, CommentsSchema, ConversationSchema, UsersSchema, NotificationSchema } from "../schemas";
 import { DB_APP_ID } from '@env';
 import { useDispatch } from 'react-redux';
 import { setUsers } from "../../features/user/userSlice";
@@ -168,4 +168,44 @@ export const getConversations = async(email) => {
     }, 2000);
 
     return conversations;
+}
+
+export const getNotifications = async (email) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [NotificationSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const notification = realm
+                .objects("Notification")
+            subs.add(notification);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    const notifications = realm.objects("Notification").filtered(`targetedUser='${email}'`).sorted('utcDate', true);
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+
+    return notifications;
 }

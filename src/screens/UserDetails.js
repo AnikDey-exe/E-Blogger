@@ -22,6 +22,7 @@ import BottomTab from '../components/layout/BottomTab';
 import BlogCard from '../components/ui/BlogCard';
 import MessageCard from '../components/ui/MessageCard';
 import { PRIMARY_COLOR } from '../constants';
+import { createId, getCurrentDate } from '../utils';
 
 const userSelector = (context) => [context.user]
 
@@ -118,7 +119,7 @@ function UserDetails({ route, navigation }) {
                                                     unfollowUser(profile._id, user.attributes.email)
                                                     dispatch(updateUnfollowUser({ id: profile._id, email: user.attributes.email }))
                                                 } else {
-                                                    followUser(profile._id, user.attributes.email)
+                                                    followUser(profile._id, user.attributes.email, createId(), getCurrentDate().toString(), Date.now(), ownProfile.handle, profile.email)
                                                     dispatch(updateFollowUser({ id: profile._id, email: user.attributes.email }))
                                                 }
                                             }}>

@@ -74,6 +74,11 @@ function BlogCreate({ navigation }) {
     const markdownInputRef = useRef();
 
     async function handleAdd(title, hashtag, content, author, status, imageToUpload) {
+        if(title === '') {
+            setAlertMessage('Title field is empty');
+            setAlertVisible(true);
+            return;
+        }
         const id = createId();
         let thumbnail = '';
         let date = getCurrentDate().toString();
@@ -82,6 +87,12 @@ function BlogCreate({ navigation }) {
             thumbnail = await getImage(`blog/${id}`);
         }
         await createBlog(title, hashtag, content, author, status, thumbnail, date, [], id)
+        setSelectedImage('')
+        setTitle('')
+        setContent('')
+        setHashtag('')
+        setAlertMessage('Your blog has been created');
+        setAlertVisible(true);
     }
 
     return (
@@ -93,7 +104,8 @@ function BlogCreate({ navigation }) {
                     />
                     <Alert visible={alertVisible} onClose={()=>{
                         setAlertVisible(false)
-                    }}/>
+                        setAlertMessage('')
+                    }} message={alertMessage}/>
 
                     {/* user inputs for title, hashtag, and markdown */}
                     <ScrollView keyboardShouldPersistTaps="handled">
@@ -145,13 +157,17 @@ function BlogCreate({ navigation }) {
                             <GlobalButton
                                 style={{ backgroundColor: PRIMARY_COLOR }}
                                 onPress={() => {
-                                    selectImage(function (res) {
-                                        if (!res.error) {
-                                            setSelectedImage(res.source)
-                                        }
-                                    })
+                                    if(!selectedImage) {
+                                        selectImage(function (res) {
+                                            if (!res.error) {
+                                                setSelectedImage(res.source)
+                                            }
+                                        })
+                                    } else {
+                                        setSelectedImage('')
+                                    }
                                 }}>
-                                <Text style={{ color: 'white', fontFamily: 'Inter-Bold' }}>Upload Image</Text>
+                                <Text style={{ color: 'white', fontFamily: 'Inter-Bold' }}>{selectedImage ? "Cancel" : "Upload Image"}</Text>
                             </GlobalButton>
                             {selectedImage && <Text style={{
                                 alignSelf: 'center',
@@ -161,9 +177,9 @@ function BlogCreate({ navigation }) {
                         </View>
                         <View style={{ flexDirection: 'row' }}>
                             <GlobalButton style={{ backgroundColor: 'transparent', marginRight: 7.5 }} 
-                                // onPress={()=>{
-                                //     setMode('dark')
-                                // }}
+                                onPress={()=>{
+                                    handleAdd(title, hashtag, content, user.attributes.email, 'saved', selectedImage)
+                                }}
                             >
                                 <Text style={{ color: theme.colors.primary, fontFamily: 'Inter-Bold' }}>Save</Text>
                             </GlobalButton>

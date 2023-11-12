@@ -1,5 +1,5 @@
 import Realm from "realm";
-import { BlogSchema, CommentsSchema, ConversationSchema, UsersSchema } from "../schemas";
+import { BlogSchema, CommentsSchema, ConversationSchema, NotificationSchema, UsersSchema } from "../schemas";
 import { DB_APP_ID } from '@env';
 
 export const createBlog = async (title, hashtag, content, author, status, thumbnail, date, likedBy, id) => {
@@ -137,7 +137,7 @@ export const unlikeBlog = async (id, email) => {
     }, 2000)
 }
 
-export const addComment = async (id, commentId, author, date, image, likedBy, message, utcDate) => {
+export const addComment = async (id, commentId, author, date, image, likedBy, message, utcDate, notificationId, blogAuthor, authorHandle) => {
     const app = new Realm.App({
         id: DB_APP_ID,
         timeout: 2000
@@ -151,7 +151,7 @@ export const addComment = async (id, commentId, author, date, image, likedBy, me
         user = await app.logIn(credentials);
 
         realm = await Realm.open({
-            schema: [CommentsSchema],
+            schema: [CommentsSchema, NotificationSchema],
             sync: {
                 user: user,
                 flexible: true
@@ -161,7 +161,10 @@ export const addComment = async (id, commentId, author, date, image, likedBy, me
         await realm.subscriptions.update((subs) => {
             const comments = realm
                 .objects("Comments")
+            const notification = realm
+                .objects("Notification")
             subs.add(comments);
+            subs.add(notification);
         });
         console.log("subscribeds")
     } catch (err) {
@@ -169,6 +172,7 @@ export const addComment = async (id, commentId, author, date, image, likedBy, me
     }
 
     let item;
+    let item2;
     realm.write(() => {
         item = realm.create('Comments', {
             _id: id,
@@ -180,6 +184,15 @@ export const addComment = async (id, commentId, author, date, image, likedBy, me
             message: message,
             utcDate: utcDate
         })
+        if (author !== blogAuthor) {
+            item2 = realm.create('Notification', {
+                _id: notificationId,
+                message: `${authorHandle} has commented on your post: ${message.substring(0, 50)} ${message.length > 50 ? '...' : ''}`,
+                date: date,
+                utcDate: utcDate,
+                targetedUser: blogAuthor
+            })
+        }
         console.log('Created.')
     })
 
@@ -321,7 +334,7 @@ export const registerUser = async (id, accountVisibility, bio, dateOption, email
     }, 2000)
 }
 
-export const followUser = async (id, email) => {
+export const followUser = async (id, email, notificationId, date, utcDate, profileHandle, targetedUser) => {
     const app = new Realm.App({
         id: DB_APP_ID,
         timeout: 2000
@@ -335,7 +348,7 @@ export const followUser = async (id, email) => {
         user = await app.logIn(credentials);
 
         realm = await Realm.open({
-            schema: [UsersSchema],
+            schema: [UsersSchema, NotificationSchema],
             sync: {
                 user: user,
                 flexible: true
@@ -345,16 +358,27 @@ export const followUser = async (id, email) => {
         await realm.subscriptions.update((subs) => {
             const users = realm
                 .objects("Users")
+            const notification = realm
+                .objects("Notification")
             subs.add(users);
+            subs.add(notification);
         });
         console.log("subscribeds")
     } catch (err) {
         console.error("Failed to log in", err);
     }
 
+    let item;
     realm.write(() => {
         const tUser = realm.objects("Users").filtered(`_id='${id}'`)[0];
         tUser.followers = [...tUser.followers, email];
+        item = realm.create('Notification', {
+            _id: notificationId,
+            message: `${profileHandle} has started following you`,
+            date: date,
+            utcDate: utcDate,
+            targetedUser: targetedUser
+        })
     })
 
     setTimeout(() => {
@@ -568,7 +592,7 @@ export const updateAccountVisibility = async (email, accountVisibility) => {
     }, 2000)
 }
 
-export const createConversation = async (id, email1, email2, lastMessage, lastMessageDate, lastMessageUtcDate) => {
+export const createConversation = async (id, email1, email2, lastMessage, lastMessageDate, lastMessageUtcDate, notificationId, profileHandle, targetedUser) => {
     const app = new Realm.App({
         id: DB_APP_ID,
         timeout: 2000
@@ -582,7 +606,7 @@ export const createConversation = async (id, email1, email2, lastMessage, lastMe
         user = await app.logIn(credentials);
 
         realm = await Realm.open({
-            schema: [ConversationSchema],
+            schema: [ConversationSchema, NotificationSchema],
             sync: {
                 user: user,
                 flexible: true
@@ -592,7 +616,10 @@ export const createConversation = async (id, email1, email2, lastMessage, lastMe
         await realm.subscriptions.update((subs) => {
             const conversations = realm
                 .objects("Conversation")
+            const notification = realm
+                .objects("Notification")
             subs.add(conversations);
+            subs.add(notification);
         });
         console.log("subscribeds")
     } catch (err) {
@@ -603,9 +630,10 @@ export const createConversation = async (id, email1, email2, lastMessage, lastMe
     if (conversation.length === 0) {
         let item;
         let item2;
+        let item3;
         realm.write(() => {
             item = realm.create('Conversation', {
-                _id: id+'conversation',
+                _id: id + 'conversation',
                 lastMessage: lastMessage,
                 lastMessageDate: lastMessageDate,
                 lastMessageUtcDate: lastMessageUtcDate,
@@ -614,15 +642,114 @@ export const createConversation = async (id, email1, email2, lastMessage, lastMe
             })
 
             item2 = realm.create('Conversation', {
-                _id: id+'conversation2',
+                _id: id + 'conversation2',
                 lastMessage: lastMessage,
                 lastMessageDate: lastMessageDate,
                 lastMessageUtcDate: lastMessageUtcDate,
                 participantOne: email2,
                 participantTwo: email1
             })
+
+            item3 = realm.create('Notification', {
+                _id: notificationId,
+                message: `${profileHandle} has started a conversation with you`,
+                date: lastMessageDate,
+                utcDate: lastMessageUtcDate,
+                targetedUser: targetedUser
+            })
         })
     }
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const createNotification = async (id, message, date, utcDate, targetedUser) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [NotificationSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const notification = realm
+                .objects("Notification")
+            subs.add(notification);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    let item;
+    realm.write(() => {
+        item = realm.create('Notification', {
+            _id: id,
+            message: message,
+            date: date,
+            utcDate: utcDate,
+            targetedUser: targetedUser
+        })
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const deleteNotification = async (id) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [NotificationSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const notification = realm
+                .objects("Notification")
+            subs.add(notification);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    var notificationToDelete = realm.objects("Notification").filtered(`_id='${id}'`)
+
+    realm.write(()=>{
+        realm.delete(notificationToDelete)
+
+        notificationToDelete = null;
+    })
 
     setTimeout(() => {
         user.logOut()

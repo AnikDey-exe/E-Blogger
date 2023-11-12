@@ -2,7 +2,7 @@ import React from 'react';
 import { TextInput, StyleSheet } from 'react-native';
 import { ThemeConsumer } from '@rneui/themed';
 
-export default function MessageInput({ value, onChangeText, style = {} }) {
+export default function MessageInput({ value, onChangeText, onFocus, onBlur, style = {} }) {
     return (
         <ThemeConsumer>
             {({ theme }) => (
@@ -11,6 +11,8 @@ export default function MessageInput({ value, onChangeText, style = {} }) {
                     multiline={true}
                     value={value}
                     onChangeText={onChangeText}
+                    onFocus={onFocus}
+                    onBlur={onBlur}
                     style={[styles.input, { ...style }]} />
             )}
         </ThemeConsumer>
@@ -26,6 +28,7 @@ const styles = StyleSheet.create({
         borderColor: '#d6d6d6',
         borderRadius: 5,
         paddingLeft: 10,
-        fontFamily: 'Inter-Regular'
+        fontFamily: 'Inter-Regular',
+        textAlignVertical: 'top'
     }
 })
