@@ -70,6 +70,14 @@ If you can't get this to work, see the [Troubleshooting](https://reactnative.dev
 
 # Learn More
 
+# Stack Used
+- Front End: React Native
+- Auth: AWS Amplify Auth
+- Database: MongoDB Realm Sync
+- Cloud Storage: Firebase
+- State Management: Redux
+- UI: React Native Elements
+
 To learn more about React Native, take a look at the following resources:
 
 - [React Native Website](https://reactnative.dev) - learn more about React Native.
