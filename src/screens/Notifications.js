@@ -4,6 +4,7 @@ import {
     View,
     FlatList,
     StyleSheet,
+    RefreshControl
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { withAuthenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
@@ -20,11 +21,16 @@ function Notifications({ navigation }) {
     const { user, signOut } = useAuthenticator(userSelector);
 
     const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         async function getNotifs() {
+            setLoading(true);
             const notifs = await getNotifications(user.attributes.email);
             setNotifications(notifs);
+            setTimeout(() => {
+                setLoading(false);
+            }, 2000)
         }
         getNotifs();
     }, [])
@@ -52,7 +58,17 @@ function Notifications({ navigation }) {
                                     }} />
                             )
                         }}
-                        keyExtractor={item => item._id} />
+                        keyExtractor={item => item._id}
+                        refreshControl={<RefreshControl refreshing={loading} onRefresh={async () => {
+                            if (!loading) {
+                                setLoading(true);
+                                const notifs = await getNotifications(user.attributes.email);
+                                setNotifications(notifs);
+                                setTimeout(()=>{
+                                    setLoading(false);
+                                }, 2000)
+                            }
+                        }} />} />
                     <BottomTab navigation={navigation} currentTab="Notifications" />
                 </View>
             )}

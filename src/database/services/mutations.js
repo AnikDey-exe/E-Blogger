@@ -55,6 +55,95 @@ export const createBlog = async (title, hashtag, content, author, status, thumbn
     }, 2000)
 }
 
+export const updateBlog = async (id, content, date, hashtag, status, thumbnail, title) => {
+    console.log('c', content)
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [BlogSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const blogs = realm
+                .objects("Blog")
+            subs.add(blogs);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(() => {
+        const blog = realm.objects("Blog").filtered(`blogId='${id}'`)[0]
+        blog.content = content
+        blog.date = date
+        blog.hashtagCategory = hashtag
+        blog.status = status
+        blog.thumbnail = thumbnail
+        blog.title = title
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
+export const publishBlog = async (id, date) => {
+    const app = new Realm.App({
+        id: DB_APP_ID,
+        timeout: 2000
+    });
+
+    const credentials = Realm.Credentials.anonymous();
+    let user;
+    let realm;
+
+    try {
+        user = await app.logIn(credentials);
+
+        realm = await Realm.open({
+            schema: [BlogSchema],
+            sync: {
+                user: user,
+                flexible: true
+            },
+        });
+
+        await realm.subscriptions.update((subs) => {
+            const blogs = realm
+                .objects("Blog")
+            subs.add(blogs);
+        });
+        console.log("subscribeds")
+    } catch (err) {
+        console.error("Failed to log in", err);
+    }
+
+    realm.write(() => {
+        const blog = realm.objects("Blog").filtered(`blogId='${id}'`)[0]
+        blog.status = "published"
+        blog.date = date
+    })
+
+    setTimeout(() => {
+        user.logOut()
+    }, 2000)
+}
+
 export const likeBlog = async (id, email) => {
     const app = new Realm.App({
         id: DB_APP_ID,

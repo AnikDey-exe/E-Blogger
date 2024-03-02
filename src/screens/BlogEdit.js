@@ -18,8 +18,8 @@ import GlobalButton from '../components/ui/GlobalButton';
 import Alert from '../components/ui/Alert';
 import Markdown from 'react-native-markdown-package';
 import { selectImage, uploadImage, getImage, createId, getCurrentDate } from '../utils';
-import { createBlog } from '../database/services/mutations';
-import { addBlog } from '../features/blog/blogSlice';
+import { updateBlog, publishBlog } from '../database/services/mutations';
+import { updateEditedBlog } from '../features/blog/blogSlice';
 
 const markdownFeatures = [
     {
@@ -64,12 +64,13 @@ const markdownFeatures = [
 ]
 const userSelector = (context) => [context.user]
 
-function BlogCreate({ navigation }) {
+function BlogEdit({ route, navigation }) {
+    const { blog } = route.params;
     const dispatch = useDispatch();
 
-    const [title, setTitle] = useState('');
-    const [hashtag, setHashtag] = useState('');
-    const [content, setContent] = useState('');
+    const [title, setTitle] = useState(blog.title);
+    const [hashtag, setHashtag] = useState(blog.hashtagCategory);
+    const [content, setContent] = useState(blog.content);
     const [selectedImage, setSelectedImage] = useState(null);
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
@@ -77,51 +78,51 @@ function BlogCreate({ navigation }) {
     const { user, signOut } = useAuthenticator(userSelector);
     const markdownInputRef = useRef();
 
-    async function handleAdd(title, hashtag, content, author, status, imageToUpload) {
-        if(title === '') {
+    async function handleUpdate(id, title, hashtag, content, status, imageToUpload) {
+        if (title === '') {
             setAlertMessage('Title field is empty');
             setAlertVisible(true);
             return;
         }
-        const id = createId();
-        let thumbnail = '';
+        let thumbnail = blog.thumbnail;
         let date = getCurrentDate().toString();
-        if(selectedImage) {
+        if (selectedImage) {
             await uploadImage(`blog/${id}`, imageToUpload);
             thumbnail = await getImage(`blog/${id}`);
         }
-        await createBlog(title, hashtag, content, author, status, thumbnail, date, [], id)
-        dispatch(addBlog({
-            _id: id, 
-            author: author, 
-            blogId: id, 
-            content: content, 
-            date: date, 
-            hashtagCategory: hashtag, 
-            likedBy: [], 
-            status: status, 
-            thumbnail: thumbnail, 
+        await updateBlog(id, content, date, hashtag, status, thumbnail, title)
+        dispatch(updateEditedBlog({
+            id: id,
+            content: content,
+            date: date,
+            hashtagCategory: hashtag,
+            status: status,
+            thumbnail: thumbnail,
             title: title
         }))
         setSelectedImage('')
         setTitle('')
         setContent('')
         setHashtag('')
-        setAlertMessage('Your blog has been created');
+        setAlertMessage('Your blog has been edited');
         setAlertVisible(true);
     }
 
     return (
         <ThemeConsumer>
             {({ theme }) => (
-                <View style={[styles.container, { backgroundColor: !alertVisible ? theme.colors.background: 'rgba(0, 0, 0, 0.5)'}]}>
-                    <AltHeader navigation={navigation} hasLeftComponent={true} text="Create" 
-                    background={'transparent'}
+                <View style={[styles.container, { backgroundColor: !alertVisible ? theme.colors.background : 'rgba(0, 0, 0, 0.5)' }]}>
+                    <AltHeader navigation={navigation} hasLeftComponent={true} text="Edit"
+                        background={'transparent'}
                     />
-                    <Alert visible={alertVisible} onClose={()=>{
+                    <Alert visible={alertVisible} onClose={() => {
                         setAlertVisible(false)
-                        setAlertMessage('')
-                    }} message={alertMessage}/>
+                        if (alertMessage === 'Your blog has been edited' || alertMessage === 'Your blog has been published') {
+                            navigation.goBack()
+                        } else {
+                            setAlertMessage('')
+                        }
+                    }} message={alertMessage} />
 
                     {/* user inputs for title, hashtag, and markdown */}
                     <ScrollView keyboardShouldPersistTaps="handled">
@@ -173,7 +174,7 @@ function BlogCreate({ navigation }) {
                             <GlobalButton
                                 style={{ backgroundColor: PRIMARY_COLOR }}
                                 onPress={() => {
-                                    if(!selectedImage) {
+                                    if (!selectedImage) {
                                         selectImage(function (res) {
                                             if (!res.error) {
                                                 setSelectedImage(res.source)
@@ -192,15 +193,26 @@ function BlogCreate({ navigation }) {
                             }}> Selected! </Text>}
                         </View>
                         <View style={{ flexDirection: 'row' }}>
-                            <GlobalButton style={{ backgroundColor: 'transparent', marginRight: 7.5 }} 
-                                onPress={()=>{
-                                    handleAdd(title, hashtag, content, user.attributes.email, 'saved', selectedImage)
+                            <GlobalButton style={{ backgroundColor: 'transparent', marginRight: 7.5 }}
+                                onPress={() => {
+                                    handleUpdate(blog._id, title, hashtag, content, 'saved', selectedImage)
                                 }}
                             >
                                 <Text style={{ color: theme.colors.primary, fontFamily: 'Inter-Bold' }}>Save</Text>
                             </GlobalButton>
-                            <GlobalButton style={{ backgroundColor: PRIMARY_COLOR }} onPress={()=>{
-                                handleAdd(title, hashtag, content, user.attributes.email, 'published', selectedImage)
+                            <GlobalButton style={{ backgroundColor: PRIMARY_COLOR }} onPress={async () => {
+                                await publishBlog(blog._id, getCurrentDate().toString())
+                                dispatch(updateEditedBlog({
+                                    id: blog._id,
+                                    content: content,
+                                    date: getCurrentDate().toString(),
+                                    hashtagCategory: hashtag,
+                                    status: "published",
+                                    thumbnail: blog.thumbnail,
+                                    title: title
+                                }))
+                                setAlertMessage('Your blog has been published');
+                                setAlertVisible(true);
                             }}>
                                 <Text style={{ color: 'white', fontFamily: 'Inter-Bold' }}>Publish</Text>
                             </GlobalButton>
@@ -319,4 +331,4 @@ const markdownStyle = {
     }
 }
 
-export default BlogCreate;
+export default BlogEdit;

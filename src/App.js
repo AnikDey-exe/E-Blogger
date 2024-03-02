@@ -21,6 +21,10 @@ import Chat from './screens/Chat';
 import Notifications from './screens/Notifications';
 import Search from './screens/Search';
 import SearchResults from './screens/SearchResults';
+import BlogEdit from './screens/BlogEdit';
+import { LogBox } from 'react-native';
+
+LogBox.ignoreAllLogs();
 
 const theme = createTheme({
   lightColors: {
@@ -124,6 +128,9 @@ function App() {
               headerShown: false
             }} />
             <Stack.Screen name="SearchResults" component={SearchResults} options={{
+              headerShown: false
+            }} />
+            <Stack.Screen name="BlogEdit" component={BlogEdit} options={{
               headerShown: false
             }} />
           </Stack.Navigator>

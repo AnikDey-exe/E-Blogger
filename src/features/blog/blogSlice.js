@@ -12,11 +12,32 @@ export const blogSlice = createSlice({
         setBlogs: (state, action) => {
             state.data = action.payload
         },
+        addBlog: (state, action) => {
+            state.data = [...state.data, {
+                _id: action.payload._id,
+                author: action.payload.author,
+                blogId: action.payload.blogId,
+                content: action.payload.content,
+                date: action.payload.date,
+                hashtagCategory: action.payload.hashtagCategory,
+                likedBy: action.payload.likedBy,
+                status: action.payload.status,
+                thumbnail: action.payload.thumbnail,
+                title: action.payload.title
+            }]
+        },
         setStatus: (state, action) => {
             state.status = action.payload
         },
         setError: (state, action) => {
             state.error = action.payload
+        },
+        updateEditedBlog: (state, action) => {
+            state.data = [...state.data.map((item, i)=>{
+                return item.blogId === action.payload.id ? 
+                    {_id: item.id, author: item.author, blogId: item.blogId, content: action.payload.content, date: action.payload.date, hashtagCategory: action.payload.hashtagCategory, likedBy: item.likedBy, status: action.payload.status, thumbnail: action.payload.thumbnail, title: action.payload.title} 
+                    : item
+            })]
         },
         updateLikedBlog: (state, action) => {
             state.data = [...state.data.map((item, i)=>{
@@ -40,6 +61,6 @@ export const blogSlice = createSlice({
 })
 
 // actions are created for each reducer case
-export const { setBlogs, setStatus, setError, updateLikedBlog, updateUnlikedBlog } = blogSlice.actions
+export const { setBlogs, addBlog, setStatus, setError, updateEditedBlog, updateLikedBlog, updateUnlikedBlog } = blogSlice.actions
 
 export default blogSlice.reducer

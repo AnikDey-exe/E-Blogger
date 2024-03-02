@@ -144,7 +144,7 @@ function Chat({ route, navigation }) {
                 conv2.lastMessageDate = currentDate
                 conv2.lastMessageUtcDate = utcDate
                 item = realm.create('Comments', {
-                    _id: id,
+                    _id: id+"convo",
                     author: author,
                     commentId: conversationId.substring(0, 6),
                     date: currentDate,

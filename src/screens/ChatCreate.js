@@ -17,12 +17,13 @@ import { createConversation } from '../database/services/mutations';
 
 const userSelector = (context) => [context.user]
 
-function ChatCreate({ navigation }) {
+function ChatCreate({ route, navigation }) {
     const { user, signOut } = useAuthenticator(userSelector);
+    const { email } = route.params;
 
     const users = useSelector(state => state.user.data);
 
-    const [participant, setParticipant] = useState('');
+    const [participant, setParticipant] = useState(email);
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
     const [changing, setChanging] = useState(false);

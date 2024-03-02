@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Text,
     View,
@@ -15,6 +15,7 @@ import UserCard from '../components/ui/UserCard';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from '@reduxjs/toolkit';
 import { likeBlog, unlikeBlog } from '../database/services/mutations';
+import ImageView from 'react-native-image-viewing';
 
 const userSelector = (context) => [context.user]
 
@@ -51,12 +52,57 @@ function SearchResults({ route, navigation }) {
 
     const [tab, setTab] = useState('Blogs');
 
+    const [isVisible, setIsVisible] = useState(false);
+    const [selectedImage, setSelectedImage] = useState('https://images.unsplash.com/photo-1575936123452-b67c3203c357?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D');
+    const [count, setCount] = useState(0);
+
+    const stateChange = (item) => {
+        console.log('clicked')
+        setIsVisible(true);
+    }
+    const handleImageChange = useCallback((item)=>{
+       stateChange(item)
+    }, [])
+
+    const handleImageClose = useCallback((item)=>{
+        setIsVisible(false);
+    }, [isVisible])
+
+    const renderItem = useCallback(({ item, index }) => {
+        return (
+            <BlogCard
+                item={item}
+                navigation={navigation}
+                isLastItem={index === filteredBlogs.length - 1}
+                isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
+                onLike={() => {
+                    likeBlog(item.blogId, user.attributes.email)
+                    dispatch(updateLikedBlog({ id: item.blogId, email: user.attributes.email }))
+                }}
+                onUnlike={() => {
+                    unlikeBlog(item.blogId, user.attributes.email)
+                    dispatch(updateUnlikedBlog({ id: item.blogId, email: user.attributes.email }))
+                }}
+                onImagePressed={handleImageChange}
+                user={state2.filter((user) => { return user.email === item.author })[0]}
+                marginBottomVal={85} />
+        )
+    }, [filteredBlogs])
+
     return (
         <ThemeConsumer>
             {({ theme }) => (
                 <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
                     <AltHeader hasLeftComponent={true} navigation={navigation} text="Results"
                         background={"transparent"} />
+                    <ImageView
+                        images={[{
+                            uri: selectedImage
+                        }]}
+                        imageIndex={0}
+                        visible={isVisible}
+                        onRequestClose={handleImageClose}
+                    />
                     <View style={[styles.subheadingContainer,
                         // { backgroundColor: theme.colors.background }
                     ]}>
@@ -79,30 +125,7 @@ function SearchResults({ route, navigation }) {
                             <FlatList
                                 data={filteredBlogs}
                                 extraData={filteredBlogs}
-                                renderItem={({ item, index }) => {
-                                    return (
-                                        <BlogCard
-                                            item={item}
-                                            navigation={navigation}
-                                            isLastItem={index === filteredBlogs.length - 1}
-                                            isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
-                                            onLike={() => {
-                                                likeBlog(item.blogId, user.attributes.email)
-                                                dispatch(updateLikedBlog({ id: item.blogId, email: user.attributes.email }))
-                                            }}
-                                            onUnlike={() => {
-                                                unlikeBlog(item.blogId, user.attributes.email)
-                                                dispatch(updateUnlikedBlog({ id: item.blogId, email: user.attributes.email }))
-                                            }}
-                                            onImagePressed={() => {
-                                                setSelectedImage(item.thumbnail);
-                                                setIsVisible(true);
-                                            }}
-                                            user={state2.filter((user) => { return user.email === item.author })[0]}
-                                            marginBottomVal={85} />
-                                    )
-                                }
-                                }
+                                renderItem={renderItem}
                                 keyExtractor={item => item._id} />
                         ) : (
                             <FlatList

@@ -1,8 +1,9 @@
-import React, { memo } from "react";
+import React, { useEffect, memo } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { Avatar, Icon, ThemeConsumer } from "@rneui/themed";
 
 function BlogCard({ item, isLastItem, isLiked, onLike, onUnlike, onImagePressed, user, navigation, marginBottomVal }) {
+    // console.log('card rerender')
     return (
         <ThemeConsumer>
             {({ theme }) => (
@@ -11,19 +12,26 @@ function BlogCard({ item, isLastItem, isLiked, onLike, onUnlike, onImagePressed,
                         <Avatar
                             size={50}
                             rounded
-                            source={user ? {uri: user.profilePicture} : {}}
-                            containerStyle={{marginLeft: 10}}
-                            onPress={()=>{
+                            source={user ? { uri: user.profilePicture } : {}}
+                            containerStyle={{ marginLeft: 10 }}
+                            onPress={() => {
                                 navigation.navigate('UserDetails', {
-                                    email: user.email
+                                    email: user.email,
                                 })
-                            }}/>
+                            }} />
                         <TouchableOpacity
                             style={{ backgroundColor: 'transparent' }}
                             onPress={() => {
-                                navigation.navigate('BlogDetails', {
-                                    blogId: item.blogId
-                                })
+                                if (item.status === "published") {
+                                    navigation.navigate('BlogDetails', {
+                                        blogId: item.blogId,
+                                        handle: user.handle
+                                    })
+                                } else {
+                                    navigation.navigate('BlogEdit', {
+                                        blog: item
+                                    })
+                                }
                             }}>
                             <Text style={[styles.title, { color: theme.colors.secondary }]}> {item.title}</Text>
                             <Text style={[styles.subtitle, { color: theme.colors.secondary }]}> {user ? user.handle : ''} </Text>
@@ -39,7 +47,14 @@ function BlogCard({ item, isLastItem, isLiked, onLike, onUnlike, onImagePressed,
                                 aspectRatio: 1,
                             }} />
                     </TouchableOpacity>
-                    <Text style={styles.hashtag}> #{item.hashtagCategory} </Text>
+                    <TouchableOpacity onPress={() => {
+                        navigation.navigate('SearchResults', {
+                            searchTerm: `${item.hashtagCategory}`
+                        })
+                    }}>
+                        <Text style={styles.hashtag}> #{item.hashtagCategory} </Text>
+                    </TouchableOpacity>
+
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Icon
                             name={isLiked ? "heart" : "hearto"}
@@ -96,4 +111,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default memo(BlogCard)
+export default memo(BlogCard, (p, n) => p.onImagePressed === n.onImagePressed)

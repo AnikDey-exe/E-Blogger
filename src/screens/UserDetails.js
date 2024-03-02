@@ -23,6 +23,7 @@ import BlogCard from '../components/ui/BlogCard';
 import MessageCard from '../components/ui/MessageCard';
 import { PRIMARY_COLOR } from '../constants';
 import { createId, getCurrentDate } from '../utils';
+import ImageView from 'react-native-image-viewing';
 
 const userSelector = (context) => [context.user]
 
@@ -41,6 +42,9 @@ function UserDetails({ route, navigation }) {
 
     const [messages, setMessages] = useState([]);
 
+    const [isVisible, setIsVisible] = useState(false);
+    const [selectedImage, setSelectedImage] = useState('');
+
     const scrollOffsetY = useRef(new Animated.Value(0)).current;
 
     const animatedHeaderHeight = scrollOffsetY.interpolate({
@@ -58,7 +62,7 @@ function UserDetails({ route, navigation }) {
     useEffect(() => {
         async function fetchComments() {
             const comments = await getUserComments(profile.email)
-            setMessages(comments);
+            setMessages(comments.filter((item, i) => { return item._id.indexOf("convo") === -1 }));
         }
         fetchComments();
     }, [])
@@ -84,6 +88,14 @@ function UserDetails({ route, navigation }) {
                             </TouchableOpacity>
                         }
                     />}
+                    <ImageView
+                        images={[{
+                            uri: selectedImage
+                        }]}
+                        imageIndex={0}
+                        visible={isVisible}
+                        onRequestClose={() => setIsVisible(false)}
+                    />
                     <View style={styles.mainContainer}>
                         <View style={{ padding: 20 }}>
                             <Animated.View style={{
@@ -105,6 +117,30 @@ function UserDetails({ route, navigation }) {
                                         <Text style={[styles.bio, { color: theme.colors.secondary }]}>{profile.bio}</Text>
                                         <Text style={[styles.followerCount, {}]}>{profile.followers.length} followers</Text>
                                     </View>
+                                    {((profile.accountVisibility.toLowerCase() === "public"
+                                        || (profile.accountVisibility.toLowerCase() === "followers only" && profile.followers.indexOf(user.attributes.email) >= 0))
+                                        && email !== user.attributes.email) &&
+                                        <GlobalButton
+                                            style={{
+                                                height: 40,
+                                                marginTop: 7.5,
+                                                backgroundColor: profile.followers.indexOf(user.attributes.email) >= 0 ? 'transparent' : PRIMARY_COLOR,
+                                                borderWidth: 1,
+                                                borderColor: PRIMARY_COLOR
+                                            }}
+                                            onPress={() => {
+                                                navigation.navigate('ChatCreate', {
+                                                    email: email
+                                                })
+                                            }}>
+                                            <Text
+                                                style={{
+                                                    color: profile.followers.indexOf(user.attributes.email) >= 0 ? PRIMARY_COLOR : 'white'
+                                                }}>
+                                                Message
+                                            </Text>
+                                        </GlobalButton>
+                                    }
                                     {email !== user.attributes.email &&
                                         <GlobalButton
                                             style={{
@@ -151,6 +187,14 @@ function UserDetails({ route, navigation }) {
                                         }}>
                                         <Text style={[styles.subheading, { color: theme.colors.secondary, fontFamily: tab === 'Comments' ? 'Inter-Bold' : 'Inter-Medium' }]}>Comments</Text>
                                     </TouchableOpacity>
+                                    {profile.email === user.attributes.email &&
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setTab('Saved')
+                                            }}>
+                                            <Text style={[styles.subheading, { color: theme.colors.secondary, fontFamily: tab === 'Saved' ? 'Inter-Bold' : 'Inter-Medium' }]}>Saved</Text>
+                                        </TouchableOpacity>
+                                    }
                                 </View>}
                         </View>
                         {(profile.accountVisibility.toLowerCase() === "public"
@@ -159,8 +203,8 @@ function UserDetails({ route, navigation }) {
                             <>
                                 {tab === 'Blogs' &&
                                     <FlatList
-                                        data={blogs}
-                                        extraData={blogs}
+                                        data={blogs.filter((item) => { return item.status === "published" })}
+                                        extraData={blogs.filter((item) => { return item.status === "published" })}
                                         style={{
                                             backgroundColor: theme.colors.background
                                         }}
@@ -169,7 +213,7 @@ function UserDetails({ route, navigation }) {
                                                 <BlogCard
                                                     item={item}
                                                     navigation={navigation}
-                                                    isLastItem={index === blogs.length - 1}
+                                                    isLastItem={index === blogs.filter((item) => { return item.status === "published" }).length - 1}
                                                     isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
                                                     onLike={() => {
                                                         likeBlog(item.blogId, user.attributes.email)
@@ -180,7 +224,8 @@ function UserDetails({ route, navigation }) {
                                                         dispatch(updateUnlikedBlog({ id: item.blogId, email: user.attributes.email }))
                                                     }}
                                                     onImagePressed={() => {
-
+                                                        setSelectedImage(item.thumbnail);
+                                                        setIsVisible(true);
                                                     }}
                                                     user={profile}
                                                     marginBottomVal={"125%"} />
@@ -204,17 +249,58 @@ function UserDetails({ route, navigation }) {
                                                 <MessageCard
                                                     item={item}
                                                     email={user.attributes.email}
+                                                    user={{handle: profile.handle}}
                                                     isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
-                                                    absoluteDate={ownProfile.dateOption === 'absolute'} />
+                                                    absoluteDate={ownProfile.dateOption === 'absolute'}
+                                                    isLastItem={index === messages.length - 1}
+                                                    marginBottomVal={"200%"} />
                                             )
                                         }}
+                                        keyExtractor={item => item._id} />
+                                }
+
+                                {tab === 'Saved' &&
+                                    <FlatList
+                                        data={blogs.filter((item) => { return item.status === "saved" })}
+                                        extraData={blogs.filter((item) => { return item.status === "saved" })}
+                                        style={{
+                                            backgroundColor: theme.colors.background
+                                        }}
+                                        renderItem={({ item, index }) => {
+                                            return (
+                                                <BlogCard
+                                                    item={item}
+                                                    navigation={navigation}
+                                                    isLastItem={index === blogs.filter((item) => { return item.status === "saved" }).length - 1}
+                                                    isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
+                                                    onLike={() => {
+                                                        likeBlog(item.blogId, user.attributes.email)
+                                                        dispatch(updateLikedBlog({ id: item.blogId, email: user.attributes.email }))
+                                                    }}
+                                                    onUnlike={() => {
+                                                        unlikeBlog(item.blogId, user.attributes.email)
+                                                        dispatch(updateUnlikedBlog({ id: item.blogId, email: user.attributes.email }))
+                                                    }}
+                                                    onImagePressed={() => {
+                                                        setSelectedImage(item.thumbnail);
+                                                        setIsVisible(true);
+                                                    }}
+                                                    user={profile}
+                                                    marginBottomVal={"125%"} />
+                                            )
+                                        }}
+                                        scrollEventThrottle={16}
+                                        onScroll={Animated.event(
+                                            [{ nativeEvent: { contentOffset: { y: scrollOffsetY } } }],
+                                            { useNativeDriver: false }
+                                        )}
                                         keyExtractor={item => item._id} />
                                 }
                             </>
                         ) : (
                             <View style={{
-                                justifyContent: 'center', 
-                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                alignItems: 'center',
                                 alignSelf: 'center',
                                 // borderColor: 'black',
                                 // borderWidth: 1,

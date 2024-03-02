@@ -4,16 +4,16 @@ import { Icon, ThemeConsumer } from "@rneui/themed";
 import { getDiffBetweenDates } from "../../utils";
 import { likeComment, unlikeComment } from "../../database/services/mutations";
 
-export default function MessageCard({ item, isLiked, email, absoluteDate }) {
+export default function MessageCard({ item, isLiked, email, absoluteDate, isLastItem, marginBottomVal, user }) {
     const [liked, setLiked] = useState(isLiked);
     const [likes, setLikes] = useState(item.likedBy.length)
 
     return (
         <ThemeConsumer>
             {({ theme }) => (
-                <View style={styles.messageContainer}>
+                <View style={[styles.messageContainer, { marginBottom: isLastItem && marginBottomVal }]}>
                     <View style={styles.metadataContainer}>
-                        <Text style={[styles.metadata, { color: theme.colors.secondary }]}>{item.author}</Text>
+                        <Text style={[styles.metadata, { color: theme.colors.secondary }]}>{user.handle}</Text>
                         <Text style={[styles.metadata, { color: 'grey', marginLeft: 10 }]}>{!absoluteDate ? getDiffBetweenDates(item.utcDate, Date.now()) + 'd' : item.date}</Text>
                     </View>
                     <Text style={[styles.message, { color: theme.colors.secondary }]}>{item.message} </Text>

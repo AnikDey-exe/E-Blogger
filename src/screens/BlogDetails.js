@@ -25,11 +25,12 @@ import { getComments } from '../database/services/queries';
 const userSelector = (context) => [context.user]
 
 function BlogDetails({ route, navigation }) {
-    const { blogId } = route.params;
+    const { blogId, handle } = route.params;
     const dispatch = useDispatch();
     const blog = useSelector(state => state.blog.data.find((item) => item.blogId === blogId));
 
     const { user, signOut } = useAuthenticator(userSelector);
+    const users = useSelector(state => state.user.data)
     const profile = useSelector(state => state.user.data.find((item) => item.email === user.attributes.email));
 
     const [message, setMessage] = useState('');
@@ -97,7 +98,7 @@ function BlogDetails({ route, navigation }) {
 
                             {/* blog metadata */}
                             <View style={styles.blogMetadataContainer}>
-                                <Text style={[styles.metadata, { color: theme.colors.secondary }]}>{blog.author}</Text>
+                                <Text style={[styles.metadata, { color: theme.colors.secondary }]}>{handle}</Text>
                                 <Text style={[styles.metadata, { color: theme.colors.secondary }]}>{blog.date}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 25 }}>
@@ -130,6 +131,7 @@ function BlogDetails({ route, navigation }) {
                                         <MessageCard
                                             item={item}
                                             email={user.attributes.email}
+                                            user={users.filter((userP) => { return userP.email === user.attributes.email })[0]}
                                             isLiked={item?.likedBy.indexOf(user.attributes.email) >= 0 ? true : false}
                                             absoluteDate={profile.dateOption === 'absolute'} />
                                     )

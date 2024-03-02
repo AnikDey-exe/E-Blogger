@@ -5,7 +5,8 @@ import {
     FlatList,
     Image,
     StyleSheet,
-    ScrollView
+    ScrollView,
+    RefreshControl
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { withAuthenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
@@ -26,12 +27,17 @@ function Messages({ navigation }) {
     const [conversations, setConversations] = useState([]);
     const [results, setResults] = useState([]);
     const [searchVal, setSearchVal] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         async function getConversationsForUser() {
+            setLoading(true);
             const convs = await getConversations(user.attributes.email);
             setConversations(convs);
             setResults(convs);
+            setTimeout(() => {
+                setLoading(false);
+            }, 2000)
         }
         getConversationsForUser();
     }, [])
@@ -49,7 +55,9 @@ function Messages({ navigation }) {
                                 type="entypo"
                                 color={theme.colors.primary}
                                 onPress={() => {
-                                    navigation.navigate('ChatCreate');
+                                    navigation.navigate('ChatCreate', {
+                                        email: ''
+                                    });
                                 }} />
                         }
                     />
@@ -60,9 +68,9 @@ function Messages({ navigation }) {
                             setResults(search(conversations, text))
                         }} />
                     <FlatList
-                        data={[{_id: 'ai2981', participantTwo: 'Assistant', subheading: 'Chat With Me'},...results]}
-                        extraData={[{_id: 'ai2981', participantTwo: 'Assistant', subheading: 'Chat With Me'},...results]}
-                        style={{marginTop: 10}}
+                        data={[{ _id: 'ai2981', participantTwo: 'Assistant', subheading: 'Chat With Me' }, ...results]}
+                        extraData={[{ _id: 'ai2981', participantTwo: 'Assistant', subheading: 'Chat With Me' }, ...results]}
+                        style={{ marginTop: 10 }}
                         renderItem={({ item, index }) => {
                             const targetUser = index !== 0 ? users.filter((user) => user.email === item.participantTwo)[0] : '';
                             return (
@@ -72,17 +80,30 @@ function Messages({ navigation }) {
                                     subheading={index === 0 ? 'Chat with me!' : item.lastMessage}
                                     avatar={index === 0 ? 'https://images.vexels.com/media/users/3/129538/isolated/preview/11620f8f156f35ff8e4bf81d9dad3e58-man-head-cartoon-design.png' : targetUser.profilePicture}
                                     date={index === 0 ? '' : item.lastMessageDate}
-                                    onPress={()=>{
+                                    onPress={() => {
                                         navigation.navigate('Chat', {
                                             avatar: index === 0 ? 'https://images.vexels.com/media/users/3/129538/isolated/preview/11620f8f156f35ff8e4bf81d9dad3e58-man-head-cartoon-design.png' : targetUser.profilePicture,
                                             conversationId: item._id,
                                             name: index === 0 ? 'Assistant' : targetUser.handle,
                                             type: index === 0 ? 'ai' : 'user'
                                         })
-                                    }}/>
+                                    }} />
                             )
                         }}
-                        keyExtractor={item => item._id} />
+                        keyExtractor={item => item._id}
+                        refreshControl={
+                            <RefreshControl refreshing={loading} onRefresh={async () => {
+                                if (!loading) {
+                                    setLoading(true);
+                                    const convs = await getConversations(user.attributes.email);
+                                    setConversations(convs);
+                                    setResults(convs);
+                                    setTimeout(() => {
+                                        setLoading(false);
+                                    }, 2000)
+                                }
+                            }} />
+                        }/>
                     <BottomTab navigation={navigation} currentTab="Messages" />
 
                 </View>
